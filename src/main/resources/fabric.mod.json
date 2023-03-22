@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "pistonautodupe",
+  "version": "${version}",
+  "name": "pistonautodupe",
+  "description": "A mod to assist in piston dupe",
+  "authors": [
+    "butter"
+  ],
+  "contact": {
+    "repo": "https://github.com/Admin/pistonautodupe"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/pistonautodupe/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "main": [
+      "org.butter.pistonautodupe.FabricPistonAutoDupe"
+    ]
+  },
+  "mixins": [
+    "pistonautodupe.mixins.json"
+  ],
+  "depends": {
+    "fabric": "*"
+  }
+}
