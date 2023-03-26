@@ -6,9 +6,8 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.entity.decoration.ItemFrameEntity;
 import net.minecraft.network.Packet;
-import net.minecraft.text.Text;
+import net.minecraft.text.LiteralText;
 import org.lwjgl.glfw.GLFW;
 
 public class FabricPistonAutoDupe implements ModInitializer {
@@ -23,7 +22,7 @@ public class FabricPistonAutoDupe implements ModInitializer {
         if (instance == null) instance = this;
 
         keyBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "Turn on dupe",
+                "key.piston_auto_dupe.dupe",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_F7,
                 "PistonAutoDupe")
@@ -34,27 +33,30 @@ public class FabricPistonAutoDupe implements ModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(this::tick);
     }
 
-    // Counter = 1 => Start dupe | Counter = 2 => stop dupe
     public void tick(MinecraftClient client) {
         if (keyBinding.wasPressed()) {
             counter++;
-            handleDupe(client);
+        }
+        if (counter == 1) {
+            assert client.player != null;
+            client.player.sendMessage(
+                    new LiteralText("&f[&6PAD&f] Dupe started.".replace("&", "§")),
+                    false
+            );
+
+            autoDupe.doDupe();
+            client.options.keyUse.setPressed(true);
+        }
+        if (counter == 2) {
+            assert client.player != null;
+            client.player.sendMessage(
+                    new LiteralText("&f[&6PAD&f] Dupe stopped.".replace("&", "§")),
+                    false
+            );
+
+            client.options.keyUse.setPressed(false);
         }
     }
-
-        public void handleDupe(MinecraftClient client) {
-            assert client.player != null;
-            if (counter == 1) {
-                client.player.sendMessage(Text.literal("[&eButter&aDuper&f] Dupe &6started&f!".replace("&", "§")));
-            }
-            if (counter == 2) {
-                counter = 0;
-                client.player.sendMessage(Text.literal("[&eButter&aDuper&f] Dupe&c stopped&f!".replace("&", "§")));
-            }
-            if (client.targetedEntity instanceof ItemFrameEntity) {
-                client.options.useKey.setPressed(isDuping());
-            }
-        }
 
     // Mixin callback for Sound
         public void handlePacket (Packet<?> packet){
@@ -63,16 +65,6 @@ public class FabricPistonAutoDupe implements ModInitializer {
 
         public static FabricPistonAutoDupe getInstance() {
             return instance;
-        }
-
-        public boolean isDuping() {
-            if (counter == 1) {
-                return true;
-            }
-            if (counter == 2) {
-                return false;
-            }
-            return MinecraftClient.getInstance().mouse.wasRightButtonClicked();
         }
 
     }

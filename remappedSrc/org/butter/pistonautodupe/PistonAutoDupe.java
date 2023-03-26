@@ -21,6 +21,7 @@ public class PistonAutoDupe {
     private MinecraftClient client;
     private FabricPistonAutoDupe fabricPistonAutoDupe;
     private Monitor monitor;
+    private boolean duping = false;
 
     public PistonAutoDupe(FabricPistonAutoDupe fabricPistonAutoDupe) {
         this.fabricPistonAutoDupe = fabricPistonAutoDupe;
@@ -52,6 +53,12 @@ public class PistonAutoDupe {
         if (itemFrames.isEmpty()) return;
         ItemFrameEntity itemFrame = itemFrames.get(0);
 
+        if (!itemFrame.isAlive()) {
+            if (isItemFrame(client.player.getMainHandStack().getItem())) {
+                client.player.setStackInHand(getHand(), findFrame());
+            }
+        }
+
         client.interactionManager.interactEntity(client.player, itemFrame, Hand.MAIN_HAND);
     }
 
@@ -80,5 +87,23 @@ public class PistonAutoDupe {
 
     public void setMonitor() {
             monitor = new PistonMonitor();
+    }
+
+    public ItemStack findFrame() {
+        assert client.player != null;
+        if (isItemFrame(client.player.getOffHandStack().getItem())) {
+            return client.player.getOffHandStack();
+        }
+        return client.player.getMainHandStack();
+    }
+
+    private boolean isItemFrame(Item item) {
+        return item == Items.ITEM_FRAME || item instanceof ItemFrameItem;
+    }
+
+    private Hand getHand() {
+        assert client.player != null;
+        if (isItemFrame(client.player.getOffHandStack().getItem())) return Hand.OFF_HAND;
+        return Hand.MAIN_HAND;
     }
 }
